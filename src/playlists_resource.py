@@ -42,7 +42,7 @@ class PlaylistResource:
         res = cursor.execute(sql, (id))
 
         if res >= 1:
-            result = cur.fetchall()
+            result = cursor.fetchall()
         else:
             result = None
 

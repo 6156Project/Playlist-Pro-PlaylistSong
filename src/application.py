@@ -66,7 +66,7 @@ def getPlaylist(playlistId):
 def updatePlaylist(id):
     request_inputs = rest_utils.RESTContext(request)
 
-    res = PlaylistResource.update_resource_by_id(id, new_values=request_inputs.data)
+    res = PlaylistResource.updatePlaylist(id, new_values=request_inputs.data)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
     return rsp
