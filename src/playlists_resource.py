@@ -35,6 +35,21 @@ class PlaylistResource:
 
         return result
 
+    def getPlaylist(id):
+        sql = "select * FROM PlaylistSong.Playlists JOIN PlaylistSong.PlaylistSong ON PlaylistSong.Playlists.id = PlaylistSong.PlaylistSong.playlistId where PlaylistSong.Playlists.id=%s;"
+        conn = PlaylistResource._get_connection()
+        cursor = conn.cursor()
+        res = cursor.execute(sql, (id))
+
+        if res >= 1:
+            result = cur.fetchall()
+        else:
+            result = None
+
+        return result
+
+        pass
+
 
     @staticmethod
     def addPlaylist(new_resource):
@@ -72,3 +87,41 @@ class PlaylistResource:
 
         pass
 
+    @staticmethod
+    def updatePlaylist(id, new_values):
+
+        column_string = []
+        i = 1
+        for key, val in new_values.items():
+            if i < len(new_values):
+                column_string.append(key + "=" + '"' + str(val) + '"' + ",")
+                i += 1
+            else:
+                column_string.append(key + "=" + '"' + str(val) + '"')
+        column_string = " ".join(column_string)
+        sql = "UPDATE PlaylistSong.Playlists" + " SET " + column_string + " where id=%s"
+        conn = PlaylistResource._get_connection()
+        cursor = conn.cursor()
+        try:
+            res = cursor.execute(sql, (id))
+            conn.commit()
+            return 1
+        except:
+            return 0
+        pass
+
+    @staticmethod
+    def deletePlaylist(id):
+
+        sql = "DELETE FROM PlaylistSong.Playlists WHERE id=%s"
+        conn = PlaylistResource._get_connection()
+        cursor = conn.cursor()
+
+        try:
+            res = cursor.execute(sql, (id))
+            conn.commit()
+            return 1
+        except:
+            return 0
+
+        pass

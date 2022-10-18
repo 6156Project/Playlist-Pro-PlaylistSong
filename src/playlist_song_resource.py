@@ -39,7 +39,7 @@ class PlaylistSongResource:
         column_string = " ".join(column_string)
 
         value_string = []
-        value_string.append(playlistId)
+        value_string.append("playlistId,")
         i = 1
         for key, val in new_resource.items():
             if i < len(new_resource):
