@@ -54,6 +54,31 @@ def addPlaylist():
 
     return rsp
 
+@app.route("/api/playlists/<playlistId>", methods=["GET"])
+def getPlaylist(playlistId):
+    res = PlaylistResource.getPlaylist(playlistId)
+
+    rsp = Response("Fetched Playlist " + str(res), status=200, content_type="text/plain")
+
+    return rsp
+
+@app.route("/api/playlists/<id>", methods=["PUT"])
+def updatePlaylist(id):
+    request_inputs = rest_utils.RESTContext(request)
+
+    res = PlaylistResource.update_resource_by_id(id, new_values=request_inputs.data)
+    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+    return rsp
+
+@app.route("/api/playlists/<id>", methods=["DELETE"])
+def deletePlaylist(id):
+    request_inputs = rest_utils.RESTContext(request)
+
+    res = PlaylistResource.deletePlaylist(id)
+    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+    return rsp
 
 @app.route("/api/playlists/<playlistId>/song", methods=["POST"])
 def addPlaylistSong(playlistId):
@@ -65,7 +90,6 @@ def addPlaylistSong(playlistId):
     rsp = Response("CREATED PlaylistSong " + str(res), status=201, content_type="text/plain")
 
     return rsp
-
 
 
 if __name__ == "__main__":
