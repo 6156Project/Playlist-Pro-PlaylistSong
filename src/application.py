@@ -58,7 +58,7 @@ def addPlaylist():
 def getPlaylist(playlistId):
     res = PlaylistResource.getPlaylist(playlistId)
 
-    rsp = Response("Fetched Playlist " + str(res), status=200, content_type="text/plain")
+    rsp = Response(json.dumps(res), status=200, content_type="text/plain")
 
     return rsp
 
