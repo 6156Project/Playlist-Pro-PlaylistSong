@@ -1,10 +1,16 @@
+from crypt import methods
 from flask import Flask, Response, request
 from datetime import datetime
 import json
 import rest_utils
-from playlists_resource import PlaylistResource
-from playlist_song_resource import PlaylistSongResource
+from service_factory import ServiceFactory
+# from playlists_resource import PlaylistResource
+# from playlist_song_resource import PlaylistSongResource
 from flask_cors import CORS
+from dotenv import load_dotenv
+
+# load environment variables fron .env
+load_dotenv()
 
 # Create the Flask application object.
 app = Flask(__name__,
@@ -14,80 +20,73 @@ app = Flask(__name__,
 
 CORS(app)
 
+service_factory = ServiceFactory()
 
-@app.get("/api/health")
+
+@app.route("/api/health", methods=["GET"])
 def get_health():
-    t = str(datetime.now())
     msg = {
         "name": "PlaylistSong Microservice",
         "health": "Good",
-        "at time": t
+        "at time": str(datetime.now())
     }
+    rsp = Response(json.dumps(msg), status=200, content_type="application/json")
+    return rsp
 
-    # DFF TODO Explain status codes, content type, ... ...
-    result = Response(json.dumps(msg), status=200, content_type="application/json")
+# /songs
+# /playlists
+@app.route('/api/<resource_collection>', methods=['GET','POST'])
+def do_resource_collection(resource_collection):
+    request_inputs = rest_utils.RESTContext(request, resource_collection)
+    svc = service_factory.get(resource_collection, None)
 
-    return result
-
-
-@app.route("/api/playlists", methods=["GET"])
-def getPlaylists():
-
-    result = PlaylistResource.getPlaylists()
-
-    if result:
-        rsp = Response(json.dumps(result), status=200, content_type="application.json")
+    if request_inputs.method == "GET":
+        res = svc.get_by_template(template=request_inputs.args,
+                                  field_list=request_inputs.fields)
+        rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+    elif request_inputs.method == "POST":
+        res = svc.create_resource(resource_data=request_inputs.data)
+        rsp = Response(res['text'], status=res['status'], content_type="text/plain")
     else:
-        rsp = Response("NOT FOUND", status=404, content_type="text/plain")
+        rsp = Response("NOT IMPLEMENTED", status=501, content_type="text/plain")
 
     return rsp
 
+# playlists get info, update, delete
+@app.route("/api/playlists/<id>", methods=["GET", "PUT", "DELETE"])
+def getPlaylist(id):
+    request_inputs = rest_utils.RESTContext(request, id)
+    svc = service_factory.get("playlists", None)
 
-@app.route("/api/playlists", methods=["POST"])
-def addPlaylist():
-    request_inputs = rest_utils.RESTContext(request)
-
-    data = request_inputs.data
-    res = PlaylistResource.addPlaylist(data)
-
-    rsp = Response("CREATED Playlist " + str(res), status=201, content_type="text/plain")
-
-    return rsp
-
-@app.route("/api/playlists/<playlistId>", methods=["GET"])
-def getPlaylist(playlistId):
-    res = PlaylistResource.getPlaylist(playlistId)
-
-    rsp = Response("Fetched Playlist " + str(res), status=200, content_type="text/plain")
-
-    return rsp
-
-@app.route("/api/playlists/<id>", methods=["PUT"])
-def updatePlaylist(id):
-    request_inputs = rest_utils.RESTContext(request)
-
-    res = PlaylistResource.updatePlaylist(id, new_values=request_inputs.data)
-    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+    if request_inputs.method == "GET":
+        res = svc.get_resource_by_id(id)
+        rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+    elif request_inputs.method == "PUT":
+        res = svc.update_resource(id, resource_data=request_inputs.data)
+        rsp = Response(res['text'], status=res['status'], content_type="text/plain")
+    elif request_inputs.method == "DELETE":
+        res = svc.delete_resource(id)
+        rsp = Response(res['text'], status=res['status'], content_type="text/plain")
+    else:
+        rsp = Response("NOT IMPLEMENTED", status=501, content_type="text/plain")
 
     return rsp
 
-@app.route("/api/playlists/<id>", methods=["DELETE"])
-def deletePlaylist(id):
-    request_inputs = rest_utils.RESTContext(request)
+# add songs to playlist
+@app.route("/api/playlists/<id>/song", methods=["POST", "DELETE"])
+def addPlaylistSong(id):
+    request_inputs = rest_utils.RESTContext(request, id)
+    svc = service_factory.get("playlistsongs", None)
+    request_inputs.data['playlistId'] = id
 
-    res = PlaylistResource.deletePlaylist(id)
-    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-
-    return rsp
-
-@app.route("/api/playlists/<playlistId>/song", methods=["POST"])
-def addPlaylistSong(playlistId):
-    request_inputs = rest_utils.RESTContext(request)
-
-    data = request_inputs.data
-    res = PlaylistSongResource.addPlaylistSong(data, playlistId)
-
-    rsp = Response("CREATED PlaylistSong " + str(res), status=201, content_type="text/plain")
+    if request_inputs.method == "POST":
+        res = svc.create_resource(resource_data=request_inputs.data)
+        rsp = Response(res['text'], status=res['status'], content_type="text/plain")
+    elif request_inputs.method == "DELETE":
+        res = svc.delete_resource(resource_data=request_inputs.data)
+        rsp = Response(res['text'], status=res['status'], content_type="text/plain")
+    else:
+        rsp = Response("NOT IMPLEMENTED", status=501, content_type="text/plain")
 
     return rsp
 

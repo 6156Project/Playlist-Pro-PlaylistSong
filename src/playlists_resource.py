@@ -1,39 +1,41 @@
 import pymysql
-
 import os
 
 
 class PlaylistResource:
 
-    def __int__(self):
-        pass
+    # def __int__(self):
+    #     self.schema = os.environ.get("DBSCHEMA")
+    #     self.table = "Playlist"
 
-    @staticmethod
-    def _get_connection():
+    # # @staticmethod
+    # def _get_connection():
 
-        usr = os.environ.get("DBUSER")
-        pw = os.environ.get("DBPW")
-        h = os.environ.get("DBHOST")
+    #     usr = os.environ.get("DBUSER")
+    #     pw = os.environ.get("DBPW")
+    #     h = os.environ.get("DBHOST")
+    #     port = os.environ.get("DBPORT")
 
-        conn = pymysql.connect(
-            user=usr,
-            password=pw,
-            host=h,
-            cursorclass=pymysql.cursors.DictCursor,
-            autocommit=True
-        )
-        return conn
+    #     conn = pymysql.connect(
+    #         user=usr,
+    #         password=pw,
+    #         host=h,
+    #         port=port,
+    #         cursorclass=pymysql.cursors.DictCursor,
+    #         autocommit=True
+    #     )
+    #     return conn
 
-    @staticmethod
-    def getPlaylists():
+    # # @staticmethod
+    # def getPlaylists(self):
 
-        sql = "SELECT * FROM PlaylistSong.Playlists"
-        conn = PlaylistResource._get_connection()
-        cur = conn.cursor()
-        res = cur.execute(sql)
-        result = cur.fetchall()
+    #     sql = f"SELECT * FROM {self.schema}.Playlists"
+    #     conn = PlaylistResource._get_connection()
+    #     cur = conn.cursor()
+    #     res = cur.execute(sql)
+    #     result = cur.fetchall()
 
-        return result
+    #     return result
 
     def getPlaylist(id):
         sql = "select * FROM PlaylistSong.Playlists JOIN PlaylistSong.PlaylistSong ON PlaylistSong.Playlists.id = PlaylistSong.PlaylistSong.playlistId where PlaylistSong.Playlists.id=%s;"
@@ -51,41 +53,41 @@ class PlaylistResource:
         pass
 
 
-    @staticmethod
-    def addPlaylist(new_resource):
+    # @staticmethod
+    # def addPlaylist(new_resource):
 
-        column_string = []
-        i = 1
-        for key, val in new_resource.items():
-            if i < len(new_resource):
-                column_string.append(key + ",")
-                i += 1
-            else:
-                column_string.append(key)
-        column_string = " ".join(column_string)
+    #     column_string = []
+    #     i = 1
+    #     for key, val in new_resource.items():
+    #         if i < len(new_resource):
+    #             column_string.append(key + ",")
+    #             i += 1
+    #         else:
+    #             column_string.append(key)
+    #     column_string = " ".join(column_string)
 
-        value_string = []
-        i = 1
-        for key, val in new_resource.items():
-            if i < len(new_resource):
-                value_string.append(val)
-                i += 1
-            else:
-                value_string.append(val)
-        value_string = tuple(value_string)
-        #value_string = " ".join(value_string)
+    #     value_string = []
+    #     i = 1
+    #     for key, val in new_resource.items():
+    #         if i < len(new_resource):
+    #             value_string.append(val)
+    #             i += 1
+    #         else:
+    #             value_string.append(val)
+    #     value_string = tuple(value_string)
+    #     #value_string = " ".join(value_string)
 
 
-        sql = "INSERT INTO PlaylistSong.Playlists " + " (" + column_string + ") VALUES %s;"
-        conn = PlaylistResource._get_connection()
-        cursor = conn.cursor()
-        res = cursor.execute(sql, (value_string,))
+    #     sql = "INSERT INTO PlaylistSong.Playlists " + " (" + column_string + ") VALUES %s;"
+    #     conn = PlaylistResource._get_connection()
+    #     cursor = conn.cursor()
+    #     res = cursor.execute(sql, (value_string,))
 
-        conn.commit()
+    #     conn.commit()
 
-        return new_resource["id"]
+    #     return new_resource["id"]
 
-        pass
+    #     pass
 
     @staticmethod
     def updatePlaylist(id, new_values):
