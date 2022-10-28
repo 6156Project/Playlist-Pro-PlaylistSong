@@ -33,10 +33,10 @@ class PlaylistSongsResourceConfig:
 class ServiceFactory:
     def __init__(self):
         self.rds_svc_config = RDSDataServiceConfig(
-            os.environ.get("DBUSER"),
-            os.environ.get("DBPW"),
-            os.environ.get("DBHOST"),
-            os.environ.get("DBPORT")
+            os.environ.get("RDS_USERNAME"),
+            os.environ.get("RDS_PASSWORD"),
+            os.environ.get("RDS_HOSTNAME"),
+            os.environ.get("RDS_PORT")
         )
         self.rds_service = RDSDataService(self.rds_svc_config)
         # connect songs resource to rds

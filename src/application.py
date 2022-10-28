@@ -13,17 +13,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Create the Flask application object.
-app = Flask(__name__,
+application = Flask(__name__,
             static_url_path='/',
             static_folder='static/class-ui/',
             template_folder='web/templates')
 
-CORS(app)
+CORS(application)
 
 service_factory = ServiceFactory()
 
 
-@app.route("/api/health", methods=["GET"])
+@application.route("/api/health", methods=["GET"])
 def get_health():
     msg = {
         "name": "PlaylistSong Microservice",
@@ -35,7 +35,7 @@ def get_health():
 
 # /songs
 # /playlists
-@app.route('/api/<resource_collection>', methods=['GET','POST'])
+@application.route('/api/<resource_collection>', methods=['GET','POST'])
 def do_resource_collection(resource_collection):
     request_inputs = rest_utils.RESTContext(request, resource_collection)
     svc = service_factory.get(resource_collection, None)
@@ -53,7 +53,7 @@ def do_resource_collection(resource_collection):
     return rsp
 
 # playlists get info, update, delete
-@app.route("/api/playlists/<id>", methods=["GET", "PUT", "DELETE"])
+@application.route("/api/playlists/<id>", methods=["GET", "PUT", "DELETE"])
 def getPlaylist(id):
     request_inputs = rest_utils.RESTContext(request, id)
     svc = service_factory.get("playlists", None)
@@ -73,7 +73,7 @@ def getPlaylist(id):
     return rsp
 
 # add songs to playlist
-@app.route("/api/playlists/<id>/song", methods=["POST", "DELETE"])
+@application.route("/api/playlists/<id>/song", methods=["POST", "DELETE"])
 def addPlaylistSong(id):
     request_inputs = rest_utils.RESTContext(request, id)
     svc = service_factory.get("playlistsongs", None)
@@ -92,5 +92,5 @@ def addPlaylistSong(id):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5011)
+    application.run(port=5011)
 
