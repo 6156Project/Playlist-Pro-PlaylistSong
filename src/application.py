@@ -4,7 +4,7 @@ import json
 import rest_utils
 from playlists_resource import PlaylistResource
 from playlist_song_resource import PlaylistSongResource
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 
 # Create the Flask application object.
 app = Flask(__name__,
@@ -30,6 +30,7 @@ def get_health():
     return result
 
 @app.route("/api/playlists", methods=["OPTIONS"])
+@cross_origin()
 def getPlaylistOptions():
 
     rsp = Response("Options", status=200, content_type="text/plain")
@@ -40,6 +41,7 @@ def getPlaylistOptions():
 
 
 @app.route("/api/playlists", methods=["GET"])
+@cross_origin()
 def getPlaylists():
 
     result = PlaylistResource.getPlaylists()
@@ -48,13 +50,11 @@ def getPlaylists():
         rsp = Response(json.dumps(result), status=200, content_type="application.json")
     else:
         rsp = Response("NOT FOUND", status=404, content_type="text/plain")
-    rsp.headers.add("Access-Control-Allow-Origin", "*")
-    rsp.headers.add("Access-Control-Allow-Headers", "*")
-    rsp.headers.add("Access-Control-Allow-Methods", "*")
     return rsp
 
 
 @app.route("/api/playlists", methods=["POST"])
+@cross_origin()
 def addPlaylist():
     request_inputs = rest_utils.RESTContext(request)
 
@@ -66,6 +66,7 @@ def addPlaylist():
     return rsp
 
 @app.route("/api/playlists/<playlistId>", methods=["GET"])
+@cross_origin()
 def getPlaylist(playlistId):
     res = PlaylistResource.getPlaylist(playlistId)
 
@@ -74,6 +75,7 @@ def getPlaylist(playlistId):
     return rsp
 
 @app.route("/api/playlists/<id>", methods=["PUT"])
+@cross_origin()
 def updatePlaylist(id):
     request_inputs = rest_utils.RESTContext(request)
 
@@ -83,6 +85,7 @@ def updatePlaylist(id):
     return rsp
 
 @app.route("/api/playlists/<id>", methods=["DELETE"])
+@cross_origin()
 def deletePlaylist(id):
     request_inputs = rest_utils.RESTContext(request)
 
@@ -92,6 +95,7 @@ def deletePlaylist(id):
     return rsp
 
 @app.route("/api/playlists/<playlistId>/song", methods=["POST"])
+@cross_origin()
 def addPlaylistSong(playlistId):
     request_inputs = rest_utils.RESTContext(request)
 
