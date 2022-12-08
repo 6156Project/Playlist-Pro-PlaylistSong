@@ -52,7 +52,9 @@ def getPlaylists():
         rsp = Response(json.dumps(result), status=200, content_type="application.json")
     else:
         rsp = Response("NOT FOUND", status=404, content_type="text/plain")
-
+    rsp.headers.add("Access-Control-Allow-Origin", "*")
+    rsp.headers.add("Access-Control-Allow-Headers", "*")
+    rsp.headers.add("Access-Control-Allow-Methods", "*")
     return rsp
 
 
