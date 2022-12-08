@@ -29,6 +29,19 @@ def get_health():
 
     return result
 
+@app.route("/api/playlists", methods=["OPTIONS"])
+def getPlaylistOptions():
+
+    return {
+        'statusCode': 200,
+        'headers': {
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
+        },
+        'body': json.dumps('Hello from Lambda!')
+    }
+
 
 @app.route("/api/playlists", methods=["GET"])
 def getPlaylists():
