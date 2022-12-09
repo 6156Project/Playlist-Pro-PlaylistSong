@@ -34,9 +34,6 @@ def get_health():
 def getPlaylistOptions():
 
     rsp = Response("Options", status=200, content_type="text/plain")
-    rsp.headers.add("Access-Control-Allow-Origin", "*")
-    rsp.headers.add("Access-Control-Allow-Headers", "*")
-    rsp.headers.add("Access-Control-Allow-Methods", "*")
     return rsp
 
 
