@@ -1,7 +1,5 @@
 import os
 from resources.rds_data_service import RDSDataService
-from resources.songs_resource import SongsResource
-from resources.playlist_resource import PlaylistResource
 from resources.playlist_song_resource import PlaylistSongsResource
 
 # DATABASE CONFIGS
@@ -14,16 +12,6 @@ class RDSDataServiceConfig:
 
 
 # RESOURCES CONFIGS
-class SongsResourceConfig:
-    def __init__(self, data_service, collection_name):
-        self.data_service = data_service
-        self.collection_name = collection_name
-
-class PlaylistResourceConfig:
-    def __init__(self, data_service, collection_name):
-        self.data_service = data_service
-        self.collection_name = collection_name
-
 class PlaylistSongsResourceConfig:
     def __init__(self, data_service, collection_name):
         self.data_service = data_service
@@ -39,22 +27,12 @@ class ServiceFactory:
             os.environ.get("RDS_PORT")
         )
         self.rds_service = RDSDataService(self.rds_svc_config)
-        # connect songs resource to rds
-        self.songs_service_config = SongsResourceConfig(self.rds_service, "PlaylistPro.Song")
-        self.songs_resource = SongsResource(self.songs_service_config)
-        # connect playlists resource to rds
-        self.playlists_service_config = PlaylistResourceConfig(self.rds_service, "PlaylistPro.Playlist")
-        self.playlists_resource = PlaylistResource(self.playlists_service_config)
         # connect playlist songs resource to mongo
-        self.playlistsongs_service_config = PlaylistSongsResourceConfig(self.rds_service, "PlaylistPro.PlaylistSong")
+        self.playlistsongs_service_config = PlaylistSongsResourceConfig(self.rds_service, "PlaylistSong.playlistsongs")
         self.playlistsongs_resource = PlaylistSongsResource(self.playlistsongs_service_config)
 
     def get(self, resource_name, default):
-        if resource_name == "songs":
-            result = self.songs_resource
-        elif resource_name == "playlists":
-            result = self.playlists_resource
-        elif resource_name == "playlistsongs":
+        if resource_name == "playlistsongs":
             result = self.playlistsongs_resource
         else:
             result = default
