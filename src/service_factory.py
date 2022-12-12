@@ -28,7 +28,7 @@ class ServiceFactory:
         )
         self.rds_service = RDSDataService(self.rds_svc_config)
         # connect playlist songs resource to mongo
-        self.playlistsongs_service_config = PlaylistSongsResourceConfig(self.rds_service, "PlaylistSong.playlistsongs")
+        self.playlistsongs_service_config = PlaylistSongsResourceConfig(self.rds_service, "PlaylistSongs.playlistsongs")
         self.playlistsongs_resource = PlaylistSongsResource(self.playlistsongs_service_config)
 
     def get(self, resource_name, default):

@@ -68,7 +68,11 @@ class RDSDataService(BaseDataService):
         try:
             res = cursor.execute(f"INSERT INTO {collection_name} ({columns}) VALUES ({values})")
         except pymysql.IntegrityError as e:
-            result['text'] = "Resource already exists."
+
+            if e.args[0] == 1452:
+                result['text'] = 'Resource constraint fail.'
+            else:
+                result['text'] = 'Resource already exists.'
             result['status'] = 409
         except pymysql.OperationalError as e:
             result['text'] = repr(e)

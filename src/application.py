@@ -1,4 +1,3 @@
-from crypt import methods
 from flask import Flask, Response, request
 from datetime import datetime
 import json
@@ -9,7 +8,6 @@ from dotenv import load_dotenv
 
 # load environment variables fron .env
 load_dotenv()
-
 
 # Create the Flask application object.
 application = Flask(__name__,
@@ -38,17 +36,17 @@ def get_health():
 def addPlaylistSong(id):
     request_inputs = rest_utils.RESTContext(request, id)
     svc = service_factory.get("playlistsongs", None)
-    request_inputs.data['playlistId'] = id
+    request_inputs.data['playlist_id'] = id
 
     if request_inputs.method == "GET":
         res = svc.get_resource_by_id(resource_data=request_inputs.data)
         rsp = Response(json.dumps(res), status=res['status'], content_type="application/json")
     elif request_inputs.method == "POST":
         res = svc.create_resource(resource_data=request_inputs.data)
-        rsp = Response(res['text'], status=res['status'], content_type="application/json")
+        rsp = Response(json.dumps(res), status=res['status'], content_type="application/json")
     elif request_inputs.method == "DELETE":
         res = svc.delete_resource(resource_data=request_inputs.data)
-        rsp = Response(res['text'], status=res['status'], content_type="application/json")
+        rsp = Response(json.dumps(res), status=res['status'], content_type="application/json")
     elif request_inputs.method == "OPTIONS":
         rsp = Response("Options", status=200, content_type="application/json")
     else:
