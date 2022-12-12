@@ -1,109 +1,62 @@
+from crypt import methods
 from flask import Flask, Response, request
 from datetime import datetime
 import json
 import rest_utils
-from playlists_resource import PlaylistResource
-from playlist_song_resource import PlaylistSongResource
+from service_factory import ServiceFactory
 from flask_cors import CORS, cross_origin
+from dotenv import load_dotenv
+
+# load environment variables fron .env
+load_dotenv()
+
 
 # Create the Flask application object.
-app = Flask(__name__,
+application = Flask(__name__,
             static_url_path='/',
             static_folder='static/class-ui/',
             template_folder='web/templates')
 
-CORS(app)
+CORS(application)
+
+service_factory = ServiceFactory()
 
 
-@app.get("/api/health")
+@application.route("/api/playlistsongs/health", methods=["GET"])
 def get_health():
-    t = str(datetime.now())
     msg = {
         "name": "PlaylistSong Microservice",
         "health": "Good",
-        "at time": t
+        "at time": str(datetime.now())
     }
-
-    # DFF TODO Explain status codes, content type, ... ...
-    result = Response(json.dumps(msg), status=200, content_type="application/json")
-
-    return result
-
-@app.route("/api/playlists", methods=["OPTIONS"])
-@cross_origin()
-def getPlaylistOptions():
-
-    rsp = Response("Options", status=200, content_type="application/json")
+    rsp = Response(json.dumps(msg), status=200, content_type="application/json")
     return rsp
 
-
-@app.route("/api/playlists", methods=["GET"])
+# add songs to playlists
+@application.route("/api/playlists/<id>/songs", methods=["GET", "POST", "DELETE", "OPTIONS"])
 @cross_origin()
-def getPlaylists():
+def addPlaylistSong(id):
+    request_inputs = rest_utils.RESTContext(request, id)
+    svc = service_factory.get("playlistsongs", None)
+    request_inputs.data['playlistId'] = id
 
-    result = PlaylistResource.getPlaylists()
-
-    if result:
-        rsp = Response(json.dumps(result), status=200, content_type="application/json")
+    if request_inputs.method == "GET":
+        res = svc.get_resource_by_id(resource_data=request_inputs.data)
+        rsp = Response(json.dumps(res), status=res['status'], content_type="application/json")
+    elif request_inputs.method == "POST":
+        res = svc.create_resource(resource_data=request_inputs.data)
+        rsp = Response(res['text'], status=res['status'], content_type="application/json")
+    elif request_inputs.method == "DELETE":
+        res = svc.delete_resource(resource_data=request_inputs.data)
+        rsp = Response(res['text'], status=res['status'], content_type="application/json")
+    elif request_inputs.method == "OPTIONS":
+        rsp = Response("Options", status=200, content_type="application/json")
     else:
-        rsp = Response("NOT FOUND", status=404, content_type="text/plain")
-    return rsp
-
-
-@app.route("/api/playlists", methods=["POST"])
-@cross_origin()
-def addPlaylist():
-    request_inputs = rest_utils.RESTContext(request)
-
-    data = request_inputs.data
-    res = PlaylistResource.addPlaylist(data)
-
-    rsp = Response("CREATED Playlist " + str(res), status=201, content_type="text/plain")
-
-    return rsp
-
-@app.route("/api/playlists/<playlistId>", methods=["GET"])
-@cross_origin()
-def getPlaylist(playlistId):
-    res = PlaylistResource.getPlaylist(playlistId)
-
-    rsp = Response(json.dumps(res), status=200, content_type="text/plain")
-
-    return rsp
-
-@app.route("/api/playlists/<id>", methods=["PUT"])
-@cross_origin()
-def updatePlaylist(id):
-    request_inputs = rest_utils.RESTContext(request)
-
-    res = PlaylistResource.updatePlaylist(id, new_values=request_inputs.data)
-    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-
-    return rsp
-
-@app.route("/api/playlists/<id>", methods=["DELETE"])
-@cross_origin()
-def deletePlaylist(id):
-    request_inputs = rest_utils.RESTContext(request)
-
-    res = PlaylistResource.deletePlaylist(id)
-    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-
-    return rsp
-
-@app.route("/api/playlists/<playlistId>/song", methods=["POST"])
-@cross_origin()
-def addPlaylistSong(playlistId):
-    request_inputs = rest_utils.RESTContext(request)
-
-    data = request_inputs.data
-    res = PlaylistSongResource.addPlaylistSong(data, playlistId)
-
-    rsp = Response("CREATED PlaylistSong " + str(res), status=201, content_type="text/plain")
+        rsp = Response("NOT IMPLEMENTED", status=501, content_type="text/plain")
 
     return rsp
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5011)
+    application.run(port=5011)
 
