@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 # load environment variables fron .env
 load_dotenv()
 
+
 # Create the Flask application object.
 application = Flask(__name__,
             static_url_path='/',
