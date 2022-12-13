@@ -30,8 +30,25 @@ def get_health():
     rsp = Response(json.dumps(msg), status=200, content_type="application/json")
     return rsp
 
+# get all playlists filtered by user
+@application.route("/api/playlistsongs", methods=["GET", "OPTIONS"])
+@cross_origin()
+def loadPlaylistsByUser():
+    request_inputs = rest_utils.RESTContext(request)
+    svc = service_factory.get("playlistsongs", None)
+
+    if request_inputs.method == "GET":
+        res = svc.loadPlaylistsByUser()
+        rsp = Response(json.dumps(res), status=res['status'], content_type="application/json")
+    elif request_inputs.method == "OPTIONS":
+        rsp = Response("Options", status=200, content_type="application/json")
+    else:
+        rsp = Response("NOT IMPLEMENTED", status=501, content_type="text/plain")
+
+    return rsp
+
 # add songs to playlists
-@application.route("/api/playlists/<id>/songs", methods=["GET", "POST", "DELETE", "OPTIONS"])
+@application.route("/api/playlistsongs/<id>", methods=["GET", "POST", "DELETE", "OPTIONS"])
 @cross_origin()
 def addPlaylistSong(id):
     request_inputs = rest_utils.RESTContext(request, id)

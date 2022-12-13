@@ -1,4 +1,5 @@
 from resources.base_resource import BaseResource
+import requests
 
 
 class PlaylistSongsResource(BaseResource):
@@ -17,10 +18,38 @@ class PlaylistSongsResource(BaseResource):
         return self.data_service
 
     def get_resource_by_id(self, id):
+        final_rsp = {'status': '', 'text':'', 'body':{}, 'links':[]}
         template = {'playlist_id': id}
         response = self.get_by_template(template=template)
-        if response['status'] == 200:
-            response['links'] = [
+        final_rsp['status'] = response['status']
+        final_rsp['text'] = response['text']
+
+        if final_rsp['status'] == 200:
+            # get playlist info
+            playlist_info_rsp = requests.get(
+                f'{self.config.api_gateway}/api/playlists/{id}'
+            )
+            playlist_info_rsp = playlist_info_rsp.json()
+            # get songs info
+            songs_arr = []
+            for s in response['body']:
+                song_info_rsp = requests.get(
+                    f'{self.config.api_gateway}/api/songs/{s["song_id"]}'
+                )
+                song_info_rsp = song_info_rsp.json()
+                songs_arr.append(song_info_rsp['body'][0])
+
+
+
+            final_rsp['body'] = {
+                'playlist': {
+                    'id': id,
+                    'name': playlist_info_rsp['body'][0]['name']
+                },
+                'songs': songs_arr
+                }
+            
+            final_rsp['links'] = [
                     {
                         "href": f"api/playlists/{id}/songs",
                         "rel": "self",
@@ -35,7 +64,8 @@ class PlaylistSongsResource(BaseResource):
                         "type" : "GET"
                     }
                     ]
-        return response
+
+        return final_rsp
 
     def get_by_template(self,
                         relative_path=None,
@@ -122,5 +152,8 @@ class PlaylistSongsResource(BaseResource):
     def update_resource(self, resource_data):
         pass
         
+    def loadPlaylistsByUser():
+        # TODO @ZACH
+        pass
 
 

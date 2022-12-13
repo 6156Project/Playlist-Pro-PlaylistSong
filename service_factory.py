@@ -13,9 +13,20 @@ class RDSDataServiceConfig:
 
 # RESOURCES CONFIGS
 class PlaylistSongsResourceConfig:
-    def __init__(self, data_service, collection_name):
+    def __init__(self, 
+            data_service, 
+            collection_name, 
+            api_gateway,
+            songs_table,
+            access_table,
+            playlist_table):
         self.data_service = data_service
         self.collection_name = collection_name
+        self.api_gateway = api_gateway
+        self.songs_table = songs_table
+        self.access_table = access_table
+        self.playlist_table = playlist_table
+
 
 
 class ServiceFactory:
@@ -28,7 +39,13 @@ class ServiceFactory:
         )
         self.rds_service = RDSDataService(self.rds_svc_config)
         # connect playlist songs resource to mongo
-        self.playlistsongs_service_config = PlaylistSongsResourceConfig(self.rds_service, "PlaylistSongs.playlistsongs")
+        self.playlistsongs_service_config = PlaylistSongsResourceConfig(
+            self.rds_service,
+            os.environ.get("RDS_TABLE_PLAYLISTSONGS"),
+            os.environ.get("API_GATEWAY"),
+            os.environ.get("RDS_TABLE_SONGS"),
+            os.environ.get("RDS_TABLE_PLAYLISTACCESS"),
+            os.environ.get("RDS_TABLE_PLAYLISTS"))
         self.playlistsongs_resource = PlaylistSongsResource(self.playlistsongs_service_config)
 
     def get(self, resource_name, default):

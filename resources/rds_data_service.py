@@ -39,12 +39,13 @@ class RDSDataService(BaseDataService):
             sql += " WHERE " + self.__dict_to_sql(template, 'where')
 
         conn = self._get_connection()
-        cursor = conn.cursor()
-        res = cursor.execute(sql)
-        if res >= 1:
-            result = cursor.fetchall()
-        else:
-            result = None
+        result = None
+        with conn:
+            with conn.cursor() as cursor:
+                conn.ping(reconnect=True) 
+                res = cursor.execute(sql)
+                if res >= 1:
+                    result = cursor.fetchall()
 
         return result
 
@@ -55,7 +56,9 @@ class RDSDataService(BaseDataService):
         conn = self._get_connection()
         cursor = conn.cursor()
         cursor.execute(f"SELECT * FROM {collection_name} LIMIT 1")
-        return [i[0] for i in cursor.description]
+        columns = [i[0] for i in cursor.description]
+        self._close_connection()
+        return columns
 
     def create_resource(self, collection_name, resource_data):
         columns = ','.join(resource_data.keys())
@@ -63,57 +66,65 @@ class RDSDataService(BaseDataService):
         values = ','.join('"' + item + '"' for item in str_values)
 
         conn = self._get_connection()
-        cursor = conn.cursor()
         result = {}
-        try:
-            res = cursor.execute(f"INSERT INTO {collection_name} ({columns}) VALUES ({values})")
-        except pymysql.IntegrityError as e:
 
-            if e.args[0] == 1452:
-                result['text'] = 'Resource constraint fail.'
-            else:
-                result['text'] = 'Resource already exists.'
-            result['status'] = 409
-        except pymysql.OperationalError as e:
-            result['text'] = repr(e)
-            result['status'] = 409
-        else:
-            if res == 1:
-                result['text'] = "Resource created."
-                result['status'] = 201
+        with conn:
+            with conn.cursor() as cursor:
+                conn.ping(reconnect=True) 
+                try:
+                    res = cursor.execute(f"INSERT INTO {collection_name} ({columns}) VALUES ({values})")
+                except pymysql.IntegrityError as e:
 
-        self.connection.commit()
+                    if e.args[0] == 1452:
+                        result['text'] = 'Resource constraint fail.'
+                    else:
+                        result['text'] = 'Resource already exists.'
+                    result['status'] = 409
+                except pymysql.OperationalError as e:
+                    result['text'] = repr(e)
+                    result['status'] = 409
+                else:
+                    if res == 1:
+                        result['text'] = "Resource created."
+                        result['status'] = 201
 
         return result
+
 
     def delete_resource(self, collection_name, template):
         conn = self._get_connection()
-        cursor = conn.cursor()
         result = {}
-        res = cursor.execute(f"DELETE FROM {collection_name} WHERE {self.__dict_to_sql(template, 'where')}")
-        if res == 1:
-            result['text'] = "Resource deleted."
-            result['status'] = 201
-        else:
-            result['text'] = "Resource not found"
-            result['status'] = 404
-        self.connection.commit()
 
+        with conn:
+            with conn.cursor() as cursor:
+                conn.ping(reconnect=True) 
+                res = cursor.execute(f"DELETE FROM {collection_name} WHERE {self.__dict_to_sql(template, 'where')}")
+                if res == 1:
+                    result['text'] = "Resource deleted."
+                    result['status'] = 201
+                else:
+                    result['text'] = "Resource not found"
+                    result['status'] = 404
         return result
+
 
     def update_resource(self, collection_name, values, template):
         conn = self._get_connection()
-        cursor = conn.cursor()
         result = {}
-        set_statement = self.__dict_to_sql(values, 'set')
-        where_statement = self.__dict_to_sql(template, 'where')
-        sql = f"UPDATE {collection_name} SET {set_statement} WHERE {where_statement}"
-        res = cursor.execute(sql)
-        if res == 1:
-            result['text'] = "Resource updated."
-            result['status'] = 201
-        self.connection.commit()
 
+        with conn:
+            with conn.cursor() as cursor:
+                conn.ping(reconnect=True) 
+                set_statement = self.__dict_to_sql(values, 'set')
+                where_statement = self.__dict_to_sql(template, 'where')
+                sql = f"UPDATE {collection_name} SET {set_statement} WHERE {where_statement}"
+                res = cursor.execute(sql)
+                if res == 1:
+                    result['text'] = "Resource updated."
+                    result['status'] = 201
+                else:
+                    result['text'] = "Resource not found"
+                    result['status'] = 404
         return result
 
 
@@ -132,7 +143,3 @@ class RDSDataService(BaseDataService):
             sql = ", ".join(sql_list)
 
         return sql
-
-    # def __clear_template(self, template):
-    #     clean_template = { key : value for (key, value) in template if key in self.list_columns() }
-    #     return clean_template
