@@ -17,7 +17,7 @@ class PlaylistSongsResource(BaseResource):
         return self.data_service
 
     def get_resource_by_id(self, id):
-        template = {'id': id}
+        template = {'playlist_id': id}
         response = self.get_by_template(template=template)
         if response['status'] == 200:
             response['links'] = [

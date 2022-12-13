@@ -36,15 +36,16 @@ def get_health():
 def addPlaylistSong(id):
     request_inputs = rest_utils.RESTContext(request, id)
     svc = service_factory.get("playlistsongs", None)
-    request_inputs.data['playlist_id'] = id
 
     if request_inputs.method == "GET":
-        res = svc.get_resource_by_id(resource_data=request_inputs.data)
+        res = svc.get_resource_by_id(id)
         rsp = Response(json.dumps(res), status=res['status'], content_type="application/json")
     elif request_inputs.method == "POST":
+        request_inputs.data['playlist_id'] = id
         res = svc.create_resource(resource_data=request_inputs.data)
         rsp = Response(json.dumps(res), status=res['status'], content_type="application/json")
     elif request_inputs.method == "DELETE":
+        request_inputs.data['playlist_id'] = id
         res = svc.delete_resource(resource_data=request_inputs.data)
         rsp = Response(json.dumps(res), status=res['status'], content_type="application/json")
     elif request_inputs.method == "OPTIONS":
