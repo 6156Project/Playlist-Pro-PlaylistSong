@@ -4,8 +4,6 @@ on:
   push:
     branches: [main]
 
-  workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -57,4 +55,4 @@ jobs:
 
       - name: Create test environment & deploy
         run: |
-          (eb use playlist_song && eb status playlist_song && eb deploy) || eb create playlist_song
+          (eb use playlist-song && eb status playlist-song && eb deploy) || eb create playlist-song
