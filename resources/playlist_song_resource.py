@@ -16,12 +16,13 @@ class PlaylistSongsResource(BaseResource):
             self.data_service = self.config.data_service
         return self.data_service
 
-    def get_resource_by_id(self, id):
+    def get_resource_by_id(self, id, req_inputs):
         final_rsp = {'status': '', 'text':'', 'body':{}, 'links':[]}
         template = {'playlist_id': id}
-        response = self.get_by_template(template=template)
+        response = self.get_by_template(template=template, limit=req_inputs.limit, offset=req_inputs.offset)
         final_rsp['status'] = response['status']
         final_rsp['text'] = response['text']
+
 
         if final_rsp['status'] == 200:
             # get playlist info
@@ -29,6 +30,15 @@ class PlaylistSongsResource(BaseResource):
                 f'{self.config.api_gateway}/api/playlists/{id}'
             )
             playlist_info_rsp = playlist_info_rsp.json()
+
+            final_rsp['body'] = {
+                    'playlist': {
+                        'id': id,
+                        'name': playlist_info_rsp['body'][0]['name']
+                    },
+                    'songs': []
+                }
+
             # get songs info
             songs_arr = []
             for s in response['body']:
@@ -37,17 +47,8 @@ class PlaylistSongsResource(BaseResource):
                 )
                 song_info_rsp = song_info_rsp.json()
                 songs_arr.append(song_info_rsp['body'][0])
-
-
-
-            final_rsp['body'] = {
-                    'playlist': {
-                        'id': id,
-                        'name': playlist_info_rsp['body'][0]['name']
-                    },
-                    'songs': songs_arr
-                }
             
+            final_rsp['body']['songs'] = songs_arr
             final_rsp['links'] = [
                     {
                         "href": f"api/playlistsongs/{id}",

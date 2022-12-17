@@ -55,7 +55,7 @@ def addPlaylistSong(id):
     svc = service_factory.get("playlistsongs", None)
 
     if request_inputs.method == "GET":
-        res = svc.get_resource_by_id(id)
+        res = svc.get_resource_by_id(id, request_inputs)
         rsp = Response(json.dumps(res), status=res['status'], content_type="application/json")
     elif request_inputs.method == "POST":
         request_inputs.data['playlist_id'] = id
